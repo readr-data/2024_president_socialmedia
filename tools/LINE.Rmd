@@ -2,6 +2,7 @@
 title: "R Notebook"
 ---
 ```{r}
+library(readr)
 library(plyr)
 library(dplyr)
 library(tidyr)
@@ -77,17 +78,14 @@ temp$download_time<-save_time
 temp<-rbind(old,temp)
 temp<-unique(temp)
 
-write.csv(temp,paste0(name,"_LINE.csv"),row.names=FALSE) 
+write.csv(temp,paste0("~/readr/2024_president_socialmedia/",name,"_LINE.csv"),row.names=FALSE) 
 
 ```
-
-
 
 # 首次
 ```{r}
 temp<-temp0926
 ```
-
 
 ```{r}
 colnames(temp)[1]<-"text"
