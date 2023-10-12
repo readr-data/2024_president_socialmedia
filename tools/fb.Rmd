@@ -13,6 +13,88 @@ library(tidyr)
 library(lubridate)
 library(data.table)
 ```
+# 之後更新
+```{r}
+file<-read_csv("temp1012.csv") #檔名
+
+colnames(file)[2]<-"UserName"
+hoho_fb<-fread("~/readr/2024_president_socialmedia/hoho_fb.csv")
+hoho_fb$`Facebook Id`<-format(hoho_fb$`Facebook Id`, scientific = FALSE)
+hoho_fb$`Post Created Date`<-ymd(hoho_fb$`Post Created Date`)
+hoho_fb$`Post Created Time`<-substr(hoho_fb$`Post Created`,12,19)
+kp_fb<-fread("~/readr/2024_president_socialmedia/kp_fb.csv")
+kp_fb$`Facebook Id`<-format(kp_fb$`Facebook Id`, scientific = FALSE)
+kp_fb$`Post Created Date`<-ymd(kp_fb$`Post Created Date`)
+kp_fb$`Post Created Time`<-substr(kp_fb$`Post Created`,12,19)
+lai_fb<-fread("~/readr/2024_president_socialmedia/lai_fb.csv")
+lai_fb$`Facebook Id`<-format(lai_fb$`Facebook Id`, scientific = FALSE)
+lai_fb$`Post Created Date`<-ymd(lai_fb$`Post Created Date`)
+lai_fb$`Post Created Time`<-substr(lai_fb$`Post Created`,12,19)
+kuo_fb<-fread("~/readr/2024_president_socialmedia/kuo_fb.csv")
+kuo_fb$`Facebook Id`<-format(kuo_fb$`Facebook Id`, scientific = FALSE)
+kuo_fb$`Post Created Date`<-ymd(kuo_fb$`Post Created Date`)
+kuo_fb$`Post Created Time`<-substr(kuo_fb$`Post Created`,12,19)
+
+ID_list<-unique(file$UserName)
+
+for(q in 1:length(ID_list)){
+  print(q)
+  temp<-filter(file,UserName==ID_list[q])
+  temp$`Facebook Id` <- format(temp$`Facebook Id`, scientific = FALSE)
+  temp$`Post Created`<-ymd_hms(temp$`Post Created`)
+  temp$`Post Created Time`<-substr(temp$`Post Created`,12,19)
+  if(nrow(temp)==0)
+    next
+  
+  if(ID_list[q]=="houyuih"){
+    name="hoho"
+    time<-hoho_fb$`Post Created`[nrow(hoho_fb)]
+    temp<-filter(temp,`Post Created`>time)
+    if(nrow(temp)==0)
+      next
+    colnames(temp)<-colnames(hoho_fb)
+    temp<-rbind(hoho_fb,temp)
+    temp<-unique(temp)
+    temp<-temp[order(temp$`Post Created`,decreasing = F),]
+    
+    }else if(ID_list[q]=="TerryGou1018"){
+      name="kuo"
+      time<-kuo_fb$`Post Created`[nrow(kuo_fb)]
+      temp<-filter(temp,`Post Created`>time)
+      if(nrow(temp)==0)
+        next
+      colnames(temp)<-colnames(kuo_fb)
+      temp<-rbind(kuo_fb,temp)
+      temp<-unique(temp)
+      temp<-temp[order(temp$`Post Created`,decreasing = F),]
+
+    }else if(ID_list[q]=="chingte"){
+      name="lai"
+      time<-lai_fb$`Post Created`[nrow(lai_fb)]
+      temp<-filter(temp,`Post Created`>time)
+      if(nrow(temp)==0)
+        next
+      colnames(temp)<-colnames(lai_fb)
+      temp<-rbind(lai_fb,temp)
+      temp<-unique(temp)
+      temp<-temp[order(temp$`Post Created`,decreasing = F),]
+      
+    }else{
+      name="kp"
+      time<-kp_fb$`Post Created`[nrow(kp_fb)]
+      temp<-filter(temp,`Post Created`>time)
+      if(nrow(temp)==0)
+        next
+      colnames(temp)<-colnames(kp_fb)
+      temp<-rbind(kp_fb,temp)
+      temp<-unique(temp)
+      temp<-temp[order(temp$`Post Created`,decreasing = F),]
+            }
+  fwrite(temp,paste0("~/readr/2024_president_socialmedia/",name,"_fb.csv"),row.names=FALSE)
+}
+
+```
+
 
 # 首次創建
 ```{r}
@@ -24,7 +106,8 @@ colnames(file)[2]<-"UserName"
 ID_list<-unique(file$UserName)
 
 for(q in 1:length(ID_list)){
-  print(q)
+
+    print(q)
   temp<-filter(file,UserName==ID_list[q])
   temp$`Facebook Id` <- format(temp$`Facebook Id`, scientific = FALSE)
   temp$`Post Created`<-ymd_hms(temp$`Post Created`)
@@ -70,7 +153,13 @@ fwrite(temp,paste0("~/readr/2024_president_socialmedia/kp_fb.csv"),row.names=FAL
 # 補之前的資料 lai
 ```{r}
 temp<-read_csv("~/readr/2024_president_socialmedia/lai_fb.csv")
+temp$`Facebook Id`<-format(temp$`Facebook Id`, scientific = FALSE)
+temp$`Facebook Id`<-as.character(temp$`Facebook Id`)
+temp$`Facebook Id`<-gsub(" ","",temp$`Facebook Id`)
 old<-fread("~/readr/2023_president_discussion/discussion/william_fb.csv")
+old$`Facebook Id`<-format(old$`Facebook Id`, scientific = FALSE)
+old$`Facebook Id`<-as.character(old$`Facebook Id`)
+old$`Facebook Id`<-gsub(" ","",old$`Facebook Id`)
 
 colnames(old)[2]<-"UserName"
 colnames(temp)[2]<-"UserName"
