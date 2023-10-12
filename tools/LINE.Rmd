@@ -8,9 +8,78 @@ library(dplyr)
 library(tidyr)
 library(lubridate)
 ```
+# 之後更新（無「上下午」版）
+```{r}
+temp<-"temp0928" #改成你的檔名
+name<-"kp" #看要做誰的，就改成誰的縮寫
+```
 
-# 之後更新
+## 先確認之前的資料到哪
+```{r}
+old <- read_csv(paste0("~/readr/2024_president_socialmedia/",name,"_LINE.csv"))
+date<-old$date[nrow(old)]
+date<-substr(date,1,10)
+date_old<-ymd(date)
+```
 
+## 匯入資料
+```{r}
+temp<- read_csv(paste0(temp,".csv"))
+colnames(temp)[1]<-"text"
+save_time<-temp$text[1]
+save_time<-gsub("儲存日期： ","",save_time)
+temp$date<-ifelse(grepl("\\d{4}/\\d{2}/\\d{2}",temp$text),temp$text,NA)
+temp$time<-ifelse(grepl("(\\d{2}:\\d{2})",temp$text),temp$text,NA)
+temp$time<-substr(temp$time,1,5)
+
+for (i in 1:(nrow(temp) - 1)) {
+  temp$date[i] <- ifelse(is.na(temp$date[i]), temp$date[i-1], temp$date[i])
+}
+
+temp$check<-ifelse(temp$text==temp$date,"y","")
+temp<-filter(temp,check!="y")
+
+temp$ID<-1:nrow(temp)
+ID_list<-data.frame()
+
+# 合併字串
+for(g in 2:nrow(temp)){
+  print(g)
+  mmtext<-data.frame()
+  if(is.na(temp$time[g])==FALSE)
+    next
+  for(i in g:nrow(temp)){
+    if (is.na(temp$time[i])==FALSE) 
+      break
+    mmtext<-rbind(mmtext,temp[i,])
+  }
+  mm<-paste(mmtext$text[1:nrow(mmtext)],collapse="\n")
+  temp$check[g-1]<-paste(temp$text[g-1],mm,sep="\n")
+  mmID<-select(mmtext,ID)
+  ID_list<-rbind(ID_list,mmID)
+  }
+
+ID_list<-unique(ID_list)
+temp<-anti_join(temp,ID_list,by="ID")
+temp$text<-ifelse(temp$check!="",temp$check,temp$text)
+ 
+temp$text<-substr(temp$text,10,nchar(temp$text))
+temp$text<-gsub('"','',temp$text)
+
+temp$datecheck<-substr(temp$date,1,10)
+temp$datecheck<-ymd(temp$datecheck)
+temp<-filter(temp,datecheck>=date_old)
+temp<-select(temp,date,time,text)
+temp$download_time<-save_time
+
+temp<-rbind(old,temp)
+temp<-unique(temp)
+
+write.csv(temp,paste0("~/readr/2024_president_socialmedia/",name,"_LINE.csv"),row.names=FALSE) 
+
+```
+
+# 之後更新（有「上下午」版）
 ```{r}
 temp<-"temp0928" #改成你的檔名
 name<-"kp" #看要做誰的，就改成誰的縮寫
@@ -82,9 +151,65 @@ write.csv(temp,paste0("~/readr/2024_president_socialmedia/",name,"_LINE.csv"),ro
 
 ```
 
-# 首次
+# 首次（無「上下午」版）
 ```{r}
-temp<-temp0926
+temp<- read_csv("ho_temp.csv") #改成你要匯入的檔名
+```
+
+```{r}
+colnames(temp)[1]<-"text"
+save_time<-temp$text[1]
+save_time<-gsub("儲存日期： ","",save_time)
+temp$date<-ifelse(grepl("\\d{4}/\\d{2}/\\d{2}",temp$text),temp$text,NA)
+temp$time<-ifelse(grepl("(\\d{2}:\\d{2})",temp$text),temp$text,NA)
+temp$time<-substr(temp$time,1,5)
+
+# 柯文哲限定，因為有一條怪怪的資料格式，又是很久以前的決定直接刪掉 XD
+#temp<-temp[158:nrow(temp),]
+
+for (i in 1:(nrow(temp) - 1)) {
+  temp$date[i] <- ifelse(is.na(temp$date[i]), temp$date[i-1], temp$date[i])
+}
+
+temp$check<-ifelse(temp$text==temp$date,"y","")
+temp<-filter(temp,check!="y")
+
+temp$ID<-1:nrow(temp)
+ID_list<-data.frame()
+
+# 合併字串
+for(g in 2:nrow(temp)){
+  print(g)
+  mmtext<-data.frame()
+  if(is.na(temp$time[g])==FALSE)
+    next
+  for(i in g:nrow(temp)){
+    if (is.na(temp$time[i])==FALSE) 
+      break
+    mmtext<-rbind(mmtext,temp[i,])
+  }
+  mm<-paste(mmtext$text[1:nrow(mmtext)],collapse="\n")
+  temp$check[g-1]<-paste(temp$text[g-1],mm,sep="\n")
+  mmID<-select(mmtext,ID)
+  ID_list<-rbind(ID_list,mmID)
+  }
+
+ID_list<-unique(ID_list)
+temp<-anti_join(temp,ID_list,by="ID")
+temp$text<-ifelse(temp$check!="",temp$check,temp$text)
+
+temp$text<-substr(temp$text,10,nchar(temp$text))
+temp$text<-gsub('"','',temp$text)
+
+temp<-select(temp,date,time,text)
+temp$download_time<-save_time
+
+write.csv(temp,"~/readr/2024_president_socialmedia/hoho_LINE.csv",row.names=FALSE) #這裡記得改名
+```
+
+# 首次（有「上下午」版）
+```{r}
+temp<- read_csv("ho_temp.csv") #改成你要匯入的檔名
 ```
 
 ```{r}
@@ -136,5 +261,5 @@ temp$text<-gsub('"','',temp$text)
 temp<-select(temp,date,time,text)
 temp$download_time<-save_time
 
-write.csv(temp,"kp_LINE.csv",row.names=FALSE) #這裡記得改名
+write.csv(temp,"~/readr/2024_president_socialmedia/hoho_LINE.csv",row.names=FALSE) #這裡記得改名
 ```
