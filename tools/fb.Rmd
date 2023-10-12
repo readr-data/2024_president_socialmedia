@@ -1,0 +1,126 @@
+---
+title: "R Notebook"
+---
+# 使用說明
+* 將從 crowdtangle 下載下來的檔案分別拆成不同候選人的檔案
+* 更新時會確認歷史資料，只更新新的
+
+```{r}
+library(readr)
+library(plyr)
+library(dplyr)
+library(tidyr)
+library(lubridate)
+library(data.table)
+```
+
+# 首次創建
+```{r}
+file<-read_csv("fb2018-2023.csv") #檔名
+```
+
+```{r}
+colnames(file)[2]<-"UserName"
+ID_list<-unique(file$UserName)
+
+for(q in 1:length(ID_list)){
+  print(q)
+  temp<-filter(file,UserName==ID_list[q])
+  temp$`Facebook Id` <- format(temp$`Facebook Id`, scientific = FALSE)
+  temp$`Post Created`<-ymd_hms(temp$`Post Created`)
+  temp$`Post Created Time`<-substr(temp$`Post Created`,12,19)
+  if(ID_list[q]=="houyuih"){name="hoho"}
+  if(ID_list[q]=="TerryGou1018"){name="kuo"}
+  if(ID_list[q]=="chingte"){name="lai"}
+  if(ID_list[q]=="DoctorKoWJ"){name="kp"}
+  fwrite(temp,paste0("~/readr/2024_president_socialmedia/",name,"_fb.csv"),row.names=FALSE)
+}
+```
+
+
+# 補之前的資料 kp
+```{r}
+temp<-read_csv("~/readr/2024_president_socialmedia/kp_fb.csv")
+old<-fread("https://storage.googleapis.com/data-journalism-public/2023_candidate/kp_fb.csv")
+
+colnames(old)[2]<-"UserName"
+colnames(temp)[2]<-"UserName"
+old<-filter(old,UserName=="DoctorKoWJ")
+old$`Total Interactions (weighted  —  Likes 1x Shares 1x Comments 1x Love 1x Wow 1x Haha 1x Sad 1x Angry 1x Care 1x )`<-NULL
+
+old$`Post Created`<-ymd_hms(old$`Post Created`,tz="UTC")
+old$`Page Created`<-ymd_hms(old$`Page Created`,tz="UTC")
+old$`Total Interactions`<-gsub(",","",old$`Total Interactions`)
+old$`Video Share Status`<-ifelse(old$`Video Share Status`=="",NA,old$`Video Share Status`)
+old$Link<-ifelse(old$Link=="",NA,old$Link)
+old$`Final Link`<-ifelse(old$`Final Link`=="",NA,old$`Final Link`)
+old$`Image Text`<-ifelse(old$`Image Text`=="",NA,old$`Image Text`)
+old$`Link Text`<-ifelse(old$`Link Text`=="",NA,old$`Link Text`)
+old$Description<-ifelse(old$Description=="",NA,old$Description)
+old$`Sponsor Id`<-ifelse(old$`Sponsor Id`=="",NA,old$`Sponsor Id`)
+old$`Sponsor Name`<-ifelse(old$`Sponsor Name`=="",NA,old$`Sponsor Name`)
+old$`Sponsor Category`<-ifelse(old$`Sponsor Category`=="",NA,old$`Sponsor Category`)
+colnames(old)<-colnames(temp)
+temp<-rbind(temp,old)
+temp<-unique(temp)
+temp<-temp[order(temp$`Post Created`,decreasing = F),]
+fwrite(temp,paste0("~/readr/2024_president_socialmedia/kp_fb.csv"),row.names=FALSE)
+```
+
+# 補之前的資料 lai
+```{r}
+temp<-read_csv("~/readr/2024_president_socialmedia/lai_fb.csv")
+old<-fread("~/readr/2023_president_discussion/discussion/william_fb.csv")
+
+colnames(old)[2]<-"UserName"
+colnames(temp)[2]<-"UserName"
+old<-filter(old,UserName=="chingte")
+old$`Total Interactions (weighted  —  Likes 1x Shares 1x Comments 1x Love 1x Wow 1x Haha 1x Sad 1x Angry 1x Care 1x )`<-NULL
+
+old$`Post Created`<-ymd_hms(old$`Post Created`,tz="UTC")
+old$`Page Created`<-ymd_hms(old$`Page Created`,tz="UTC")
+old$`Total Interactions`<-gsub(",","",old$`Total Interactions`)
+old$`Video Share Status`<-ifelse(old$`Video Share Status`=="",NA,old$`Video Share Status`)
+old$Link<-ifelse(old$Link=="",NA,old$Link)
+old$`Final Link`<-ifelse(old$`Final Link`=="",NA,old$`Final Link`)
+old$`Image Text`<-ifelse(old$`Image Text`=="",NA,old$`Image Text`)
+old$`Link Text`<-ifelse(old$`Link Text`=="",NA,old$`Link Text`)
+old$Description<-ifelse(old$Description=="",NA,old$Description)
+old$`Sponsor Id`<-ifelse(old$`Sponsor Id`=="",NA,old$`Sponsor Id`)
+old$`Sponsor Name`<-ifelse(old$`Sponsor Name`=="",NA,old$`Sponsor Name`)
+old$`Sponsor Category`<-ifelse(old$`Sponsor Category`=="",NA,old$`Sponsor Category`)
+colnames(old)<-colnames(temp)
+temp<-rbind(temp,old)
+temp<-unique(temp)
+temp<-temp[order(temp$`Post Created`,decreasing = F),]
+fwrite(temp,paste0("~/readr/2024_president_socialmedia/lai_fb.csv"),row.names=FALSE)
+```
+
+# 補之前的資料 ho
+```{r}
+temp<-read_csv("~/readr/2024_president_socialmedia/hoho_fb.csv")
+old<-fread("/Users/mac/Downloads/hoho_fb.csv")
+
+colnames(old)[2]<-"UserName"
+colnames(temp)[2]<-"UserName"
+old<-filter(old,UserName=="houyuih")
+old$`Total Interactions (weighted  —  Likes 1x Shares 1x Comments 1x Love 1x Wow 1x Haha 1x Sad 1x Angry 1x Care 1x )`<-NULL
+
+old$`Post Created`<-ymd_hms(old$`Post Created`,tz="UTC")
+old$`Page Created`<-ymd_hms(old$`Page Created`,tz="UTC")
+old$`Total Interactions`<-gsub(",","",old$`Total Interactions`)
+old$`Video Share Status`<-ifelse(old$`Video Share Status`=="",NA,old$`Video Share Status`)
+old$Link<-ifelse(old$Link=="",NA,old$Link)
+old$`Final Link`<-ifelse(old$`Final Link`=="",NA,old$`Final Link`)
+old$`Image Text`<-ifelse(old$`Image Text`=="",NA,old$`Image Text`)
+old$`Link Text`<-ifelse(old$`Link Text`=="",NA,old$`Link Text`)
+old$Description<-ifelse(old$Description=="",NA,old$Description)
+old$`Sponsor Id`<-ifelse(old$`Sponsor Id`=="",NA,old$`Sponsor Id`)
+old$`Sponsor Name`<-ifelse(old$`Sponsor Name`=="",NA,old$`Sponsor Name`)
+old$`Sponsor Category`<-ifelse(old$`Sponsor Category`=="",NA,old$`Sponsor Category`)
+colnames(old)<-colnames(temp)
+temp<-rbind(temp,old)
+temp<-unique(temp)
+temp<-temp[order(temp$`Post Created`,decreasing = F),]
+fwrite(temp,paste0("~/readr/2024_president_socialmedia/hoho_fb.csv"),row.names=FALSE)
+```

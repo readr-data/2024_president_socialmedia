@@ -209,7 +209,7 @@ write.csv(temp,"~/readr/2024_president_socialmedia/hoho_LINE.csv",row.names=FALS
 
 # 首次（有「上下午」版）
 ```{r}
-temp<- read_csv("ho_temp.csv") #改成你要匯入的檔名
+temp<- read_csv("kuo_temp.csv") #改成你要匯入的檔名
 ```
 
 ```{r}
@@ -261,5 +261,5 @@ temp$text<-gsub('"','',temp$text)
 temp<-select(temp,date,time,text)
 temp$download_time<-save_time
 
-write.csv(temp,"~/readr/2024_president_socialmedia/hoho_LINE.csv",row.names=FALSE) #這裡記得改名
+write.csv(temp,"~/readr/2024_president_socialmedia/kuo_LINE.csv",row.names=FALSE) #這裡記得改名
 ```
