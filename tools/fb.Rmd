@@ -15,34 +15,20 @@ library(data.table)
 ```
 # 之後更新
 ```{r}
-file<-read_csv("temp1012.csv") #檔名
+file<-read_csv("temp1012.csv",col_types = cols(.default = "c")) #檔名
 
 colnames(file)[2]<-"UserName"
-hoho_fb<-fread("~/readr/2024_president_socialmedia/hoho_fb.csv")
-hoho_fb$`Facebook Id`<-format(hoho_fb$`Facebook Id`, scientific = FALSE)
-hoho_fb$`Post Created Date`<-ymd(hoho_fb$`Post Created Date`)
-hoho_fb$`Post Created Time`<-substr(hoho_fb$`Post Created`,12,19)
-kp_fb<-fread("~/readr/2024_president_socialmedia/kp_fb.csv")
-kp_fb$`Facebook Id`<-format(kp_fb$`Facebook Id`, scientific = FALSE)
-kp_fb$`Post Created Date`<-ymd(kp_fb$`Post Created Date`)
-kp_fb$`Post Created Time`<-substr(kp_fb$`Post Created`,12,19)
-lai_fb<-fread("~/readr/2024_president_socialmedia/lai_fb.csv")
-lai_fb$`Facebook Id`<-format(lai_fb$`Facebook Id`, scientific = FALSE)
-lai_fb$`Post Created Date`<-ymd(lai_fb$`Post Created Date`)
-lai_fb$`Post Created Time`<-substr(lai_fb$`Post Created`,12,19)
-kuo_fb<-fread("~/readr/2024_president_socialmedia/kuo_fb.csv")
-kuo_fb$`Facebook Id`<-format(kuo_fb$`Facebook Id`, scientific = FALSE)
-kuo_fb$`Post Created Date`<-ymd(kuo_fb$`Post Created Date`)
-kuo_fb$`Post Created Time`<-substr(kuo_fb$`Post Created`,12,19)
+file$`Post Created`<-as.character(ymd_hms(file$`Post Created`))
+hoho_fb<-read_csv("~/readr/2024_president_socialmedia/hoho_fb.csv",col_types = cols(.default = "c"))
+kp_fb<-read_csv("~/readr/2024_president_socialmedia/kp_fb.csv",col_types = cols(.default = "c"))
+lai_fb<-read_csv("~/readr/2024_president_socialmedia/lai_fb.csv",col_types = cols(.default = "c"))
+kuo_fb<-read_csv("~/readr/2024_president_socialmedia/kuo_fb.csv",col_types = cols(.default = "c"))
 
 ID_list<-unique(file$UserName)
 
 for(q in 1:length(ID_list)){
   print(q)
   temp<-filter(file,UserName==ID_list[q])
-  temp$`Facebook Id` <- format(temp$`Facebook Id`, scientific = FALSE)
-  temp$`Post Created`<-ymd_hms(temp$`Post Created`)
-  temp$`Post Created Time`<-substr(temp$`Post Created`,12,19)
   if(nrow(temp)==0)
     next
   
@@ -89,8 +75,9 @@ for(q in 1:length(ID_list)){
       temp<-rbind(kp_fb,temp)
       temp<-unique(temp)
       temp<-temp[order(temp$`Post Created`,decreasing = F),]
-            }
-  fwrite(temp,paste0("~/readr/2024_president_socialmedia/",name,"_fb.csv"),row.names=FALSE)
+    }
+  temp[]<- lapply(temp, as.character)
+  write.csv(temp,paste0("~/readr/2024_president_socialmedia/",name,"_fbtest.csv"),row.names=FALSE)
 }
 
 ```
@@ -98,7 +85,7 @@ for(q in 1:length(ID_list)){
 
 # 首次創建
 ```{r}
-file<-read_csv("fb2018-2023.csv") #檔名
+file<-read_csv("fb2018-2023.csv",col_types = cols(.default = "c")) #檔名
 ```
 
 ```{r}
@@ -111,29 +98,30 @@ for(q in 1:length(ID_list)){
   temp<-filter(file,UserName==ID_list[q])
   temp$`Facebook Id` <- format(temp$`Facebook Id`, scientific = FALSE)
   temp$`Post Created`<-ymd_hms(temp$`Post Created`)
-  temp$`Post Created Time`<-substr(temp$`Post Created`,12,19)
+  temp$`Post Created Time`<-as.character(substr(temp$`Post Created`,12,19))
   if(ID_list[q]=="houyuih"){name="hoho"}
   if(ID_list[q]=="TerryGou1018"){name="kuo"}
   if(ID_list[q]=="chingte"){name="lai"}
   if(ID_list[q]=="DoctorKoWJ"){name="kp"}
-  fwrite(temp,paste0("~/readr/2024_president_socialmedia/",name,"_fb.csv"),row.names=FALSE)
+  temp[]<- lapply(temp, as.character)
+  write.csv(temp,paste0("~/readr/2024_president_socialmedia/",name,"_fb.csv"),row.names=FALSE)
 }
 ```
 
 
 # 補之前的資料 kp
 ```{r}
-temp<-read_csv("~/readr/2024_president_socialmedia/kp_fb.csv")
-old<-fread("https://storage.googleapis.com/data-journalism-public/2023_candidate/kp_fb.csv")
+temp<-read_csv("~/readr/2024_president_socialmedia/kp_fb.csv",col_types = cols(.default = "c"))
+old<-read_csv("/Users/mac/Downloads/kp_fb.csv",col_types = cols(.default = "c"))
 
 colnames(old)[2]<-"UserName"
 colnames(temp)[2]<-"UserName"
 old<-filter(old,UserName=="DoctorKoWJ")
 old$`Total Interactions (weighted  —  Likes 1x Shares 1x Comments 1x Love 1x Wow 1x Haha 1x Sad 1x Angry 1x Care 1x )`<-NULL
 
-old$`Post Created`<-ymd_hms(old$`Post Created`,tz="UTC")
-old$`Page Created`<-ymd_hms(old$`Page Created`,tz="UTC")
-old$`Total Interactions`<-gsub(",","",old$`Total Interactions`)
+old$`Post Created`<-as.character(ymd_hms(old$`Post Created`,tz="UTC"))
+old$`Page Created`<-as.character(ymd_hms(old$`Page Created`,tz="UTC"))
+old$`Post Created Time`<-as.character(substr(old$`Post Created`,12,19))
 old$`Video Share Status`<-ifelse(old$`Video Share Status`=="",NA,old$`Video Share Status`)
 old$Link<-ifelse(old$Link=="",NA,old$Link)
 old$`Final Link`<-ifelse(old$`Final Link`=="",NA,old$`Final Link`)
@@ -145,30 +133,26 @@ old$`Sponsor Name`<-ifelse(old$`Sponsor Name`=="",NA,old$`Sponsor Name`)
 old$`Sponsor Category`<-ifelse(old$`Sponsor Category`=="",NA,old$`Sponsor Category`)
 colnames(old)<-colnames(temp)
 temp<-rbind(temp,old)
+temp$`Total Interactions`<-gsub(",","",temp$`Total Interactions`)
 temp<-unique(temp)
 temp<-temp[order(temp$`Post Created`,decreasing = F),]
-fwrite(temp,paste0("~/readr/2024_president_socialmedia/kp_fb.csv"),row.names=FALSE)
+temp[]<- lapply(temp, as.character)
+write.csv(temp,paste0("~/readr/2024_president_socialmedia/kp_fb.csv"),row.names=FALSE)
 ```
 
 # 補之前的資料 lai
 ```{r}
-temp<-read_csv("~/readr/2024_president_socialmedia/lai_fb.csv")
-temp$`Facebook Id`<-format(temp$`Facebook Id`, scientific = FALSE)
-temp$`Facebook Id`<-as.character(temp$`Facebook Id`)
-temp$`Facebook Id`<-gsub(" ","",temp$`Facebook Id`)
-old<-fread("~/readr/2023_president_discussion/discussion/william_fb.csv")
-old$`Facebook Id`<-format(old$`Facebook Id`, scientific = FALSE)
-old$`Facebook Id`<-as.character(old$`Facebook Id`)
-old$`Facebook Id`<-gsub(" ","",old$`Facebook Id`)
+temp<-read_csv("~/readr/2024_president_socialmedia/lai_fb.csv",col_types = cols(.default = "c"))
+old<-read_csv("~/readr/2023_president_discussion/discussion/william_fb.csv",col_types = cols(.default = "c"))
 
 colnames(old)[2]<-"UserName"
 colnames(temp)[2]<-"UserName"
 old<-filter(old,UserName=="chingte")
 old$`Total Interactions (weighted  —  Likes 1x Shares 1x Comments 1x Love 1x Wow 1x Haha 1x Sad 1x Angry 1x Care 1x )`<-NULL
 
-old$`Post Created`<-ymd_hms(old$`Post Created`,tz="UTC")
-old$`Page Created`<-ymd_hms(old$`Page Created`,tz="UTC")
-old$`Total Interactions`<-gsub(",","",old$`Total Interactions`)
+old$`Post Created`<-as.character(ymd_hms(old$`Post Created`,tz="UTC"))
+old$`Page Created`<-as.character(ymd_hms(old$`Page Created`,tz="UTC"))
+old$`Post Created Time`<-as.character(substr(old$`Post Created`,12,19))
 old$`Video Share Status`<-ifelse(old$`Video Share Status`=="",NA,old$`Video Share Status`)
 old$Link<-ifelse(old$Link=="",NA,old$Link)
 old$`Final Link`<-ifelse(old$`Final Link`=="",NA,old$`Final Link`)
@@ -180,24 +164,27 @@ old$`Sponsor Name`<-ifelse(old$`Sponsor Name`=="",NA,old$`Sponsor Name`)
 old$`Sponsor Category`<-ifelse(old$`Sponsor Category`=="",NA,old$`Sponsor Category`)
 colnames(old)<-colnames(temp)
 temp<-rbind(temp,old)
+temp$`Facebook Id`<-gsub(" ","",temp$`Facebook Id`)
+temp$`Total Interactions`<-gsub(",","",temp$`Total Interactions`)
 temp<-unique(temp)
 temp<-temp[order(temp$`Post Created`,decreasing = F),]
-fwrite(temp,paste0("~/readr/2024_president_socialmedia/lai_fb.csv"),row.names=FALSE)
+temp[]<- lapply(temp, as.character)
+write.csv(temp,paste0("~/readr/2024_president_socialmedia/lai_fb.csv"),row.names=FALSE)
 ```
 
 # 補之前的資料 ho
 ```{r}
-temp<-read_csv("~/readr/2024_president_socialmedia/hoho_fb.csv")
-old<-fread("/Users/mac/Downloads/hoho_fb.csv")
+temp<-read_csv("~/readr/2024_president_socialmedia/hoho_fb.csv",col_types = cols(.default = "c"))
+old<-read_csv("/Users/mac/Downloads/hoho_fb.csv",col_types = cols(.default = "c"))
 
 colnames(old)[2]<-"UserName"
 colnames(temp)[2]<-"UserName"
 old<-filter(old,UserName=="houyuih")
 old$`Total Interactions (weighted  —  Likes 1x Shares 1x Comments 1x Love 1x Wow 1x Haha 1x Sad 1x Angry 1x Care 1x )`<-NULL
 
-old$`Post Created`<-ymd_hms(old$`Post Created`,tz="UTC")
-old$`Page Created`<-ymd_hms(old$`Page Created`,tz="UTC")
-old$`Total Interactions`<-gsub(",","",old$`Total Interactions`)
+old$`Post Created`<-as.character(ymd_hms(old$`Post Created`,tz="UTC"))
+old$`Page Created`<-as.character(ymd_hms(old$`Page Created`,tz="UTC"))
+old$`Post Created Time`<-as.character(substr(old$`Post Created`,12,19))
 old$`Video Share Status`<-ifelse(old$`Video Share Status`=="",NA,old$`Video Share Status`)
 old$Link<-ifelse(old$Link=="",NA,old$Link)
 old$`Final Link`<-ifelse(old$`Final Link`=="",NA,old$`Final Link`)
@@ -209,7 +196,23 @@ old$`Sponsor Name`<-ifelse(old$`Sponsor Name`=="",NA,old$`Sponsor Name`)
 old$`Sponsor Category`<-ifelse(old$`Sponsor Category`=="",NA,old$`Sponsor Category`)
 colnames(old)<-colnames(temp)
 temp<-rbind(temp,old)
+temp$`Total Interactions`<-gsub(",","",temp$`Total Interactions`)
 temp<-unique(temp)
 temp<-temp[order(temp$`Post Created`,decreasing = F),]
-fwrite(temp,paste0("~/readr/2024_president_socialmedia/hoho_fb.csv"),row.names=FALSE)
+temp[]<- lapply(temp, as.character)
+write.csv(temp,paste0("~/readr/2024_president_socialmedia/hoho_fb.csv"),row.names=FALSE)
 ```
+
+#kuo 處理
+```{r}
+temp<-read_csv("~/readr/2024_president_socialmedia/kuo_fb.csv",col_types = cols(.default = "c"))
+
+colnames(temp)[2]<-"UserName"
+
+temp$`Total Interactions`<-gsub(",","",temp$`Total Interactions`)
+temp<-unique(temp)
+temp<-temp[order(temp$`Post Created`,decreasing = F),]
+temp[]<- lapply(temp, as.character)
+write.csv(temp,paste0("~/readr/2024_president_socialmedia/kuo_fb.csv"),row.names=FALSE)
+```
+
